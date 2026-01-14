@@ -126,7 +126,7 @@ func RecordErrorLog(c *gin.Context, userId int, channelId int, modelName string,
 		Group:            group,
 		Ip: func() string {
 			if needRecordIp {
-				return c.ClientIP()
+				return getRecordIP(c)
 			}
 			return ""
 		}(),
@@ -185,7 +185,7 @@ func RecordConsumeLog(c *gin.Context, userId int, params RecordConsumeLogParams)
 		Group:            params.Group,
 		Ip: func() string {
 			if needRecordIp {
-				return c.ClientIP()
+				return getRecordIP(c)
 			}
 			return ""
 		}(),
@@ -200,6 +200,17 @@ func RecordConsumeLog(c *gin.Context, userId int, params RecordConsumeLogParams)
 			LogQuotaData(userId, username, params.ModelName, params.Quota, common.GetTimestamp(), params.PromptTokens+params.CompletionTokens)
 		})
 	}
+}
+
+func getRecordIP(c *gin.Context) string {
+	if strings.EqualFold(os.Getenv("USE_CF_CONNECTING_IP"), "true") {
+		cfIP := strings.TrimSpace(c.GetHeader("CF-Connecting-IP"))
+		if cfIP != "" {
+			return cfIP
+		}
+		return ""
+	}
+	return c.ClientIP()
 }
 
 func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, startIdx int, num int, channel int, group string) (logs []*Log, total int64, err error) {

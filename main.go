@@ -131,19 +131,6 @@ func main() {
 
 	// Initialize HTTP server
 	server := gin.New()
-	if os.Getenv("DEBUG_IP_HEADER") == "true" {
-		server.Use(func(c *gin.Context) {
-			common.SysLog(fmt.Sprintf(
-				"[IP-HEADERS] remote=%s xff=%s xri=%s cf=%s fwd=%s",
-				c.Request.RemoteAddr,
-				c.Request.Header.Get("X-Forwarded-For"),
-				c.Request.Header.Get("X-Real-IP"),
-				c.Request.Header.Get("CF-Connecting-IP"),
-				c.Request.Header.Get("Forwarded"),
-			))
-			c.Next()
-		})
-	}
 	server.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
 		common.SysLog(fmt.Sprintf("panic detected: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
